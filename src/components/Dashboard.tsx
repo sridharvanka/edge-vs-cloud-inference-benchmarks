@@ -25,6 +25,31 @@ const PRESETS = {
   long: "The historical conflict between edge-localized computation and centralized cloud backends represents a fundamental architectural crossroads in software engineering. Historically, client-side browsers were treated as dumb terminals designed to render HTML and handle trivial scripting. Heavy lifting, such as machine learning inference, database processing, and data transformations, was strictly delegated to centralized mainframes or massive server farms. However, with the rapid maturation of WebAssembly (WASM) and the introduction of WebGPU, modern browsers have evolved into powerful edge-computing nodes. By deploying lightweight, quantized neural networks directly to the browser, we offload massive compute costs, decrease single-user marginal hosting costs to zero, and provide instantaneous, offline-ready operations. Yet, edge computing introduces new variables: extreme variability in client hardware, battery constraints, and the initial bandwidth penalty of downloading model weights. In contrast, cloud backends run on dedicated, highly predictable CPU and GPU instances but are bound by network latency, TLS handshakes, and cold-starts on serverless platforms. Finding the tipping point where network latency exceeds raw edge compute processing time is key to designing high-performance modern web apps. Beyond raw latency, the operational economics of Edge AI present a compelling paradigm shift for modern enterprise scale. In a cloud-dependent model, every single token processed by a large language model or sentiment classifier translates directly to server hosting bills, database API ingress costs, and scaling complexity. As traffic surges, developers must scale up container clusters, manage load balancers, and implement aggressive rate-limiting policies to protect budgets. Client-side inference effectively distributes this operational burden across the global fleet of user devices, transferring the electrical and silicon costs of running neural networks directly to the consumer. Furthermore, local inference offers absolute privacy guarantees, as sensitive user text never has to traverse the public internet or sit in third-party database logs. However, the trade-off is developer control: updating a model deployed to the cloud is a simple container swap, whereas updating an edge model requires clients to download new multi-megabyte weight files, consuming cellular data and testing local storage limits. Therefore, the choice between edge and cloud is rarely binary. Hybrid architectures that dynamically route simple inputs to local WASM threads and complex reasoning queries to robust server instances represent the next evolution of web application design, optimizing performance, user experience, and cost."
 };
 
+const getPayloadBatch = (rawText: string, presetName: string): string | string[] => {
+  const sentences = rawText
+    .split(/[.!?\n]+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 5);
+    
+  if (presetName === 'short') {
+    return rawText;
+  } else if (presetName === 'medium') {
+    const batch: string[] = [];
+    while (batch.length < 5 && sentences.length > 0) {
+      batch.push(...sentences);
+    }
+    return batch.slice(0, 5);
+  } else if (presetName === 'long') {
+    const batch: string[] = [];
+    while (batch.length < 50 && sentences.length > 0) {
+      batch.push(...sentences);
+    }
+    return batch.slice(0, 50);
+  } else {
+    return sentences.length > 0 ? sentences : [rawText];
+  }
+};
+
 export default function Dashboard() {
   const [inputText, setInputText] = useState(PRESETS.medium);
   const [activePreset, setActivePreset] = useState<'short' | 'medium' | 'long' | 'custom'>('medium');
@@ -105,7 +130,7 @@ export default function Dashboard() {
   };
 
   // Helper: Client execution
-  const runWorkerCycle = (device: 'wasm' | 'webgpu', text: string, isCold: boolean): Promise<{
+  const runWorkerCycle = (device: 'wasm' | 'webgpu', text: string | string[], isCold: boolean): Promise<{
     inferenceTimeMs: number;
     initTimeMs: number;
     output: { label: string; score: number };
@@ -150,7 +175,7 @@ export default function Dashboard() {
   };
 
   // Helper: Server execution
-  const runServerCycle = async (text: string): Promise<{
+  const runServerCycle = async (text: string | string[]): Promise<{
     inferenceTimeMs: number;
     initTimeMs: number;
     output: { label: string; score: number };
@@ -195,6 +220,7 @@ export default function Dashboard() {
     const envTag = selectedEnv === 'client-wasm' ? 'WASM' : selectedEnv === 'client-webgpu' ? 'WebGPU' : 'Server';
     addLog('System', 'info', `Executing targeted benchmark on: ${selectedEnv.toUpperCase()}...`);
 
+    const payloadText = getPayloadBatch(inputText, activePreset);
     const cyclesData: BenchmarkMetrics[] = [];
 
     try {
@@ -212,13 +238,13 @@ export default function Dashboard() {
       if (selectedEnv === 'client-wasm' || selectedEnv === 'client-webgpu') {
         const dev = selectedEnv === 'client-wasm' ? 'wasm' : 'webgpu';
         const start = performance.now();
-        const result = await runWorkerCycle(dev, inputText, true);
+        const result = await runWorkerCycle(dev, payloadText, true);
         cycle0Rtt = performance.now() - start;
         cycle0Init = result.initTimeMs;
         cycle0Infer = result.inferenceTimeMs;
         cycle0Sentiment = result.output;
       } else {
-        const result = await runServerCycle(inputText);
+        const result = await runServerCycle(payloadText);
         cycle0Rtt = result.totalRtt;
         cycle0Init = result.initTimeMs;
         cycle0Infer = result.inferenceTimeMs;
@@ -264,12 +290,12 @@ export default function Dashboard() {
         if (selectedEnv === 'client-wasm' || selectedEnv === 'client-webgpu') {
           const dev = selectedEnv === 'client-wasm' ? 'wasm' : 'webgpu';
           const start = performance.now();
-          const result = await runWorkerCycle(dev, inputText, false);
+          const result = await runWorkerCycle(dev, payloadText, false);
           rtt = performance.now() - start;
           infer = result.inferenceTimeMs;
           sentiment = result.output;
         } else {
-          const result = await runServerCycle(inputText);
+          const result = await runServerCycle(payloadText);
           rtt = result.totalRtt;
           init = result.initTimeMs;
           infer = result.inferenceTimeMs;
@@ -349,6 +375,7 @@ export default function Dashboard() {
 
     try {
       for (const payload of payloads) {
+        const batchText = getPayloadBatch(payload.text, payload.key);
         for (const target of targets) {
           const runKey = `${target.key}_${payload.key}`;
           setCurrentProgressText(`Testing: ${target.label} - ${payload.label}`);
@@ -362,13 +389,13 @@ export default function Dashboard() {
           if (target.key === 'client-wasm' || target.key === 'client-webgpu') {
             const dev = target.key === 'client-wasm' ? 'wasm' : 'webgpu';
             const start = performance.now();
-            const result = await runWorkerCycle(dev, payload.text, true);
+            const result = await runWorkerCycle(dev, batchText, true);
             const totalRtt = performance.now() - start;
             coldInitTime = result.initTimeMs;
             const overhead = calculateNetworkOverhead(totalRtt, coldInitTime, result.inferenceTimeMs);
             slotRuns.push({ rtt: totalRtt, infer: result.inferenceTimeMs, overhead });
           } else {
-            const result = await runServerCycle(payload.text);
+            const result = await runServerCycle(batchText);
             coldInitTime = result.initTimeMs;
             slotRuns.push({ rtt: result.totalRtt, infer: result.inferenceTimeMs, overhead: result.totalRtt - result.inferenceTimeMs - result.initTimeMs });
           }
@@ -378,12 +405,12 @@ export default function Dashboard() {
             if (target.key === 'client-wasm' || target.key === 'client-webgpu') {
               const dev = target.key === 'client-wasm' ? 'wasm' : 'webgpu';
               const start = performance.now();
-              const result = await runWorkerCycle(dev, payload.text, false);
+              const result = await runWorkerCycle(dev, batchText, false);
               const totalRtt = performance.now() - start;
               const overhead = calculateNetworkOverhead(totalRtt, 0, result.inferenceTimeMs);
               slotRuns.push({ rtt: totalRtt, infer: result.inferenceTimeMs, overhead });
             } else {
-              const result = await runServerCycle(payload.text);
+              const result = await runServerCycle(batchText);
               slotRuns.push({ rtt: result.totalRtt, infer: result.inferenceTimeMs, overhead: result.totalRtt - result.inferenceTimeMs });
             }
             await new Promise((r) => setTimeout(r, 50));

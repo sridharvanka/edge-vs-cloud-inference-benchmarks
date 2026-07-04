@@ -21,8 +21,8 @@ async function getClassifier() {
 export async function POST(req: NextRequest) {
   try {
     const { text } = await req.json();
-    if (!text || typeof text !== 'string') {
-      return NextResponse.json({ error: 'Valid text input is required' }, { status: 400 });
+    if (!text || (typeof text !== 'string' && !Array.isArray(text))) {
+      return NextResponse.json({ error: 'Valid text input or string array is required' }, { status: 400 });
     }
 
     const initStart = performance.now();
