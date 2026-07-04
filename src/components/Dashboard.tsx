@@ -118,10 +118,14 @@ export default function Dashboard() {
         return;
       }
 
+      let initTimeVal = 0;
+
       const tempHandler = (e: MessageEvent) => {
         const data = e.data;
         if (data.type === 'init_complete') {
           initTimeVal = data.initTimeMs;
+          // Pipeline is initialized; it is now safe to trigger inference execution
+          workerRef.current?.postMessage({ action: 'infer', text });
         } else if (data.type === 'result') {
           workerRef.current?.removeEventListener('message', tempHandler);
           resolve({
@@ -135,14 +139,15 @@ export default function Dashboard() {
         }
       };
 
-      let initTimeVal = 0;
       workerRef.current.addEventListener('message', tempHandler);
 
       if (isCold) {
+        // Send init first; tempHandler will post the infer message upon init_complete
         workerRef.current.postMessage({ action: 'init', device });
+      } else {
+        // Warm start: trigger inference immediately
+        workerRef.current.postMessage({ action: 'infer', text });
       }
-      
-      workerRef.current.postMessage({ action: 'infer', text });
     });
   };
 
