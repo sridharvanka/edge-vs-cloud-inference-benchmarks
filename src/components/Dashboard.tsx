@@ -32,8 +32,6 @@ export default function Dashboard() {
   const [isRunning, setIsRunning] = useState(false);
   const [isBatchRunning, setIsBatchRunning] = useState(false);
   
-  // Simulation Toggles
-  const [simulateNetwork, setSimulateNetwork] = useState(true);
   const [currentProgressText, setCurrentProgressText] = useState('');
   const [progressVal, setProgressVal] = useState<number | null>(null);
   const [progressMessage, setProgressMessage] = useState('');
@@ -176,12 +174,7 @@ export default function Dashboard() {
     }
 
     const data = await response.json();
-    const rawRtt = performance.now() - startTime;
-
-    // Apply Network Latency Simulator offset if enabled
-    const networkDelay = simulateNetwork ? 80 : 0;
-    const totalRtt = rawRtt + networkDelay;
-    const finalTtfb = ttfb + networkDelay;
+    const totalRtt = performance.now() - startTime;
 
     return {
       inferenceTimeMs: data.telemetry.inferenceTimeMs,
@@ -189,7 +182,7 @@ export default function Dashboard() {
       output: data.output,
       isCold: data.telemetry.isCold,
       totalRtt,
-      ttfb: finalTtfb
+      ttfb
     };
   };
 
@@ -511,6 +504,78 @@ export default function Dashboard() {
     });
   };
 
+  const generateDynamicAnalysis = () => {
+    // Check if we have data for the major endpoints
+    const keys = [
+      'client-wasm_short', 'client-wasm_medium', 'client-wasm_long',
+      'client-webgpu_short', 'client-webgpu_medium', 'client-webgpu_long',
+      'server-railway_short', 'server-railway_medium', 'server-railway_long'
+    ];
+    
+    const missing = keys.filter(k => !batchMetrics[k]);
+    if (missing.length > 0) {
+      return (
+        <span style={{ fontStyle: 'italic', color: 'var(--ink-faint)' }}>
+          Run the Automated Suite to compile real-time latency crossover analysis and compute insights.
+        </span>
+      );
+    }
+
+    // We have all data! Let's extract values
+    const wasmShort = batchMetrics['client-wasm_short'].rtt;
+    const wasmLong = batchMetrics['client-wasm_long'].rtt;
+    const serverShort = batchMetrics['server-railway_short'].rtt;
+    const serverLong = batchMetrics['server-railway_long'].rtt;
+
+    const getFastest = (size: 'short' | 'medium' | 'long') => {
+      const candidates = [
+        { name: 'WASM CPU', val: batchMetrics[`client-wasm_${size}`].rtt, color: 'var(--color-wasm)' },
+        { name: 'WebGPU GPU', val: batchMetrics[`client-webgpu_${size}`].rtt, color: 'var(--color-webgpu)' },
+        { name: 'Server API', val: batchMetrics[`server-railway_${size}`].rtt, color: 'var(--color-server)' }
+      ];
+      candidates.sort((a, b) => a.val - b.val);
+      return candidates;
+    };
+
+    const shortRank = getFastest('short');
+    const longRank = getFastest('long');
+
+    const fastestShort = shortRank[0];
+    const slowestShort = shortRank[2];
+
+    const fastestLong = longRank[0];
+    const slowestLong = longRank[2];
+
+    // Determine Crossover
+    let crossoverText = '';
+    const wasmShortIsFasterThanServer = wasmShort < serverShort;
+    const serverLongIsFasterThanWasm = serverLong < wasmLong;
+
+    if (wasmShortIsFasterThanServer && serverLongIsFasterThanWasm) {
+      crossoverText = `A clear crossover occurs: Client WASM is faster than Server by ${(serverShort - wasmShort).toFixed(0)}ms on Short payloads, but Server overtakes WASM by ${(wasmLong - serverLong).toFixed(0)}ms on Long payloads. This demonstrates the exact tipping point where local execution bottlenecks are eclipsed by cloud compute throughput.`;
+    } else if (serverShort < wasmShort && serverLong < wasmLong) {
+      crossoverText = `No crossover was observed: Server API remained the fastest target across all payload sizes. This happens when the local client device's CPU/GPU is significantly slower than the cloud server, or network overhead is negligible.`;
+    } else if (wasmShort < serverShort && wasmLong < serverLong) {
+      crossoverText = `No crossover was observed: Client-side execution remained faster than the Cloud across all payload sizes. This indicates a high network latency bottleneck that offsets any cloud compute advantage, even for large inputs.`;
+    } else {
+      crossoverText = `A crossover exists: The fastest target shifted from ${fastestShort.name} (${fastestShort.val.toFixed(0)}ms) for Short text to ${fastestLong.name} (${fastestLong.val.toFixed(0)}ms) for Long text under these network conditions.`;
+    }
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '6px' }}>
+        <p style={{ margin: 0, lineHeight: 1.45 }}>
+          On <strong>Short text</strong>, the fastest target is <strong style={{ color: fastestShort.color }}>{fastestShort.name}</strong> ({fastestShort.val.toFixed(0)}ms), which is <strong>{(slowestShort.val / fastestShort.val).toFixed(1)}x faster</strong> than the slowest target ({slowestShort.name} at {slowestShort.val.toFixed(0)}ms).
+        </p>
+        <p style={{ margin: 0, lineHeight: 1.45 }}>
+          On <strong>Long text</strong>, the landscape shifts: the fastest target is <strong style={{ color: fastestLong.color }}>{fastestLong.name}</strong> ({fastestLong.val.toFixed(0)}ms), outperforming the slowest target ({slowestLong.name} at {slowestLong.val.toFixed(0)}ms) by <strong>{(slowestLong.val / fastestLong.val).toFixed(1)}x</strong>.
+        </p>
+        <p style={{ margin: 0, borderLeft: '2px solid var(--accent)', paddingLeft: '10px', color: 'var(--ink-muted)', fontStyle: 'italic', lineHeight: 1.45 }}>
+          {crossoverText}
+        </p>
+      </div>
+    );
+  };
+
   return (
     <div className="flex-column" style={{ maxWidth: 'var(--content-max)', margin: '0 auto', padding: '0 var(--page-padding) 40px' }}>
       
@@ -557,31 +622,6 @@ export default function Dashboard() {
           </p>
         </div>
         <div className="flex-row" style={{ alignItems: 'center', gap: '16px' }}>
-          {/* Deployed Network Simulator Toggle */}
-          <label style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            userSelect: 'none',
-            background: 'var(--surface)',
-            padding: '8px 12px',
-            borderRadius: '8px',
-            border: '1px solid var(--line)'
-          }}>
-            <input 
-              type="checkbox" 
-              checked={simulateNetwork}
-              onChange={(e) => setSimulateNetwork(e.target.checked)}
-              disabled={isBatchRunning || isRunning}
-              style={{ accentColor: 'var(--accent)' }}
-            />
-            <span style={{ color: simulateNetwork ? 'var(--accent-ink)' : 'var(--ink-muted)', fontWeight: 500 }}>
-              Simulate Deployed Network (+80ms RTT)
-            </span>
-          </label>
-
           <button 
             className="btn-primary"
             onClick={runAutomatedBatchSuite}
@@ -849,8 +889,8 @@ export default function Dashboard() {
       <div className="card card-body flex-column" style={{ gap: '20px', marginTop: '10px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h2 className="eyebrow" style={{ color: 'var(--ink)', fontSize: '0.9rem', margin: 0 }}>Grouped Payload Crossover Analysis (Warm RTT)</h2>
-          <span className="meta">
-            {simulateNetwork ? 'Simulated Network Active (+80ms Server Offset)' : 'Local Host Latency (Zero Server Network Offset)'}
+          <span className="meta" style={{ color: 'var(--color-server)', fontWeight: 600 }}>
+            Live Railway Cloud Network Latency
           </span>
         </div>
         
@@ -990,9 +1030,8 @@ export default function Dashboard() {
               </div>
 
               <div style={{ fontSize: '0.75rem', color: 'var(--ink-muted)', borderTop: '1px solid var(--line)', paddingTop: '10px', lineHeight: 1.5 }}>
-                <strong>How to read:</strong> Notice how WASM starts as the fastest target on <em>Short text</em> but grows significantly on <em>Long text</em>.
-                <br /><br />
-                Conversely, Server starts slowest on <em>Short text</em> due to network overhead, but becomes the fastest warm compute option on <em>Long text</em> once network transit is eclipsed by CPU execution gains.
+                <span style={{ display: 'block', fontWeight: 700, color: 'var(--ink)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.7rem' }}>Real-Time Latency Analysis</span>
+                {generateDynamicAnalysis()}
               </div>
             </div>
 
