@@ -493,14 +493,14 @@ export default function Dashboard() {
             cy={y} 
             r="4.5" 
             fill={color} 
-            stroke="#0b0f19" 
+            stroke="var(--surface)" 
             strokeWidth="1.5"
           />
           <text 
             x={p.x} 
             y={y - 8} 
-            fill="#ffffff" 
-            fontSize="8" 
+            fill="var(--ink)" 
+            fontSize="8.5" 
             fontWeight="700" 
             textAnchor="middle"
           >
@@ -512,50 +512,47 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex-column" style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 20px 40px' }}>
+    <div className="flex-column" style={{ maxWidth: 'var(--content-max)', margin: '0 auto', padding: '0 var(--page-padding) 40px' }}>
       
       {/* BRANDING HEADER */}
       <div className="header-container">
         <div className="logo-container">
           <div style={{
-            background: 'linear-gradient(135deg, hsl(270 95% 65%) 0%, hsl(190 95% 50%) 100%)',
-            width: '32px',
-            height: '32px',
-            borderRadius: '8px',
+            background: 'var(--accent)',
+            width: '30px',
+            height: '30px',
+            borderRadius: '6px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 15px rgba(139, 92, 246, 0.4)'
           }}>
-            <Cpu size={18} color="#fff" />
+            <Cpu size={16} color="var(--paper)" />
           </div>
           <div>
-            <h1 className="logo-text">AETHER</h1>
+            <h1 className="logo-text" style={{ fontSize: '1.25rem', margin: 0 }}>AETHER</h1>
             <p className="logo-sub">Inference Benchmarking</p>
           </div>
         </div>
-        <div className="flex-row" style={{ alignItems: 'center' }}>
-          <span style={{ fontSize: '0.85rem', color: 'hsl(215 20% 50%)' }}>Transformers.js v3 + WebGPU</span>
+        <div className="mono" style={{ fontSize: '0.8rem', color: 'var(--ink-faint)', fontWeight: 500 }}>
+          Transformers.js v3 + WebGPU
         </div>
       </div>
 
       {/* AUTOMATED CONTROLS BANNER */}
-      <div className="glass-panel" style={{
-        background: 'linear-gradient(135deg, hsla(270, 95%, 65%, 0.08) 0%, hsla(190, 95%, 50%, 0.03) 100%)',
-        border: '1px solid hsla(270, 95%, 65%, 0.25)',
-        display: 'flex',
+      <div className="card card-body flex-row" style={{
+        background: 'var(--inset)',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '20px 24px',
+        padding: '24px',
         flexWrap: 'wrap',
         gap: '16px'
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxWidth: '600px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Layers size={18} className="glow-webgpu" />
-            <h2 style={{ fontSize: '1.15rem', fontWeight: 700 }}>One-Click Automated Benchmarking Suite</h2>
+            <Layers size={18} className="color-webgpu" />
+            <h2 className="eyebrow" style={{ fontSize: '0.85rem', margin: 0, color: 'var(--ink)' }}>One-Click Automated Benchmarking Suite</h2>
           </div>
-          <p style={{ fontSize: '0.85rem', color: 'hsl(215 20% 65%)' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--ink-muted)', marginTop: '4px' }}>
             Execute all 9 testing matrices sequentially (Short, Medium, and Long text vs. Client WASM, Client WebGPU, and Server). This generates a complete grouped crossover visual to isolate the tipping point.
           </p>
         </div>
@@ -568,19 +565,19 @@ export default function Dashboard() {
             cursor: 'pointer',
             fontSize: '0.85rem',
             userSelect: 'none',
-            background: 'rgba(0,0,0,0.2)',
+            background: 'var(--surface)',
             padding: '8px 12px',
             borderRadius: '8px',
-            border: '1px solid hsl(217 32% 15%)'
+            border: '1px solid var(--line)'
           }}>
             <input 
               type="checkbox" 
               checked={simulateNetwork}
               onChange={(e) => setSimulateNetwork(e.target.checked)}
               disabled={isBatchRunning || isRunning}
-              style={{ accentColor: 'hsl(150, 95%, 50%)' }}
+              style={{ accentColor: 'var(--accent)' }}
             />
-            <span style={{ color: simulateNetwork ? 'hsl(150, 95%, 50%)' : 'hsl(215 20% 50%)' }}>
+            <span style={{ color: simulateNetwork ? 'var(--accent-ink)' : 'var(--ink-muted)', fontWeight: 500 }}>
               Simulate Deployed Network (+80ms RTT)
             </span>
           </label>
@@ -589,15 +586,12 @@ export default function Dashboard() {
             className="btn-primary"
             onClick={runAutomatedBatchSuite}
             disabled={isBatchRunning || isRunning}
-            style={{ 
-              animation: isBatchRunning ? 'none' : 'pulse-glow 3s infinite',
-              background: 'linear-gradient(135deg, hsl(270, 95%, 60%) 0%, hsl(190, 95%, 50%) 100%)'
-            }}
+            style={{ padding: '10px 20px', fontSize: '0.85rem' }}
           >
             {isBatchRunning ? (
               <>
-                <span className="console-cursor" style={{ margin: 0, width: '10px', height: '10px' }} />
-                <span>Running Suite...</span>
+                <span className="console-cursor" style={{ margin: 0, width: '8px', height: '12px' }} />
+                <span>Running...</span>
               </>
             ) : (
               <span>Run Automated Suite</span>
@@ -609,11 +603,11 @@ export default function Dashboard() {
       {/* DASHBOARD GRID */}
       <div className="dashboard-grid">
         
-        {/* LEFT COLUMN: Input & Settings (Manual Override) */}
+        {/* LEFT COLUMN: Input & Settings */}
         <div className="flex-column">
           
-          <div className="glass-panel flex-column" style={{ gap: '16px' }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Manual Payload Override</h2>
+          <div className="card card-body flex-column" style={{ gap: '16px' }}>
+            <span className="eyebrow">1. Select Benchmark Payload</span>
             
             <div className="flex-row" style={{ flexWrap: 'wrap', gap: '8px' }}>
               <button 
@@ -646,65 +640,67 @@ export default function Dashboard() {
               disabled={isBatchRunning || isRunning}
               placeholder="Write custom payload text..."
             />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'hsl(215 20% 50%)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--ink-faint)' }}>
               <span>Character Count: {inputText.length}</span>
               <span>Approx. Words: {inputText.split(/\s+/).filter(Boolean).length}</span>
             </div>
           </div>
 
-          <div className="glass-panel flex-column" style={{ gap: '16px' }}>
-            <h2 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Manual Target Override</h2>
+          <div className="card card-body flex-column" style={{ gap: '16px' }}>
+            <span className="eyebrow">2. Manual Target Override</span>
             
             <div className="flex-column" style={{ gap: '10px' }}>
               <label className="flex-row" style={{
                 alignItems: 'center',
                 padding: '10px 12px',
                 borderRadius: '8px',
-                background: selectedEnv === 'client-wasm' ? 'hsla(190, 95%, 50%, 0.05)' : 'rgba(8,12,21,0.2)',
-                border: `1px solid ${selectedEnv === 'client-wasm' ? 'hsl(190, 95%, 50%)' : 'hsl(217 32% 15%)'}`,
-                cursor: 'pointer'
+                background: selectedEnv === 'client-wasm' ? 'var(--inset)' : 'var(--surface)',
+                border: `1px solid ${selectedEnv === 'client-wasm' ? 'var(--color-wasm)' : 'var(--line)'}`,
+                cursor: 'pointer',
+                transition: 'all var(--transition)'
               }}>
                 <input type="radio" checked={selectedEnv === 'client-wasm'} onChange={() => setSelectedEnv('client-wasm')} disabled={isBatchRunning || isRunning} style={{ display: 'none' }} />
-                <Monitor className="glow-wasm" size={16} />
-                <span style={{ fontSize: '0.85rem', fontWeight: 500, marginLeft: '10px' }}>Client: WebAssembly (WASM CPU)</span>
+                <Monitor className="color-wasm" size={16} />
+                <span style={{ fontSize: '0.85rem', fontWeight: 500, marginLeft: '10px', color: 'var(--ink)' }}>Client: WebAssembly (WASM CPU)</span>
               </label>
 
               <label className="flex-row" style={{
                 alignItems: 'center',
                 padding: '10px 12px',
                 borderRadius: '8px',
-                background: selectedEnv === 'client-webgpu' ? 'hsla(270, 95%, 65%, 0.05)' : 'rgba(8,12,21,0.2)',
-                border: `1px solid ${selectedEnv === 'client-webgpu' ? 'hsl(270, 95%, 65%)' : 'hsl(217 32% 15%)'}`,
-                cursor: 'pointer'
+                background: selectedEnv === 'client-webgpu' ? 'var(--inset)' : 'var(--surface)',
+                border: `1px solid ${selectedEnv === 'client-webgpu' ? 'var(--color-webgpu)' : 'var(--line)'}`,
+                cursor: 'pointer',
+                transition: 'all var(--transition)'
               }}>
                 <input type="radio" checked={selectedEnv === 'client-webgpu'} onChange={() => setSelectedEnv('client-webgpu')} disabled={isBatchRunning || isRunning} style={{ display: 'none' }} />
-                <Cpu className="glow-webgpu" size={16} />
-                <span style={{ fontSize: '0.85rem', fontWeight: 500, marginLeft: '10px' }}>Client: WebGPU Acceleration (VRAM)</span>
+                <Cpu className="color-webgpu" size={16} />
+                <span style={{ fontSize: '0.85rem', fontWeight: 500, marginLeft: '10px', color: 'var(--ink)' }}>Client: WebGPU (VRAM GPU)</span>
               </label>
 
               <label className="flex-row" style={{
                 alignItems: 'center',
                 padding: '10px 12px',
                 borderRadius: '8px',
-                background: selectedEnv === 'server-railway' ? 'hsla(150, 95%, 50%, 0.05)' : 'rgba(8,12,21,0.2)',
-                border: `1px solid ${selectedEnv === 'server-railway' ? 'hsl(150, 95%, 50%)' : 'hsl(217 32% 15%)'}`,
-                cursor: 'pointer'
+                background: selectedEnv === 'server-railway' ? 'var(--inset)' : 'var(--surface)',
+                border: `1px solid ${selectedEnv === 'server-railway' ? 'var(--color-server)' : 'var(--line)'}`,
+                cursor: 'pointer',
+                transition: 'all var(--transition)'
               }}>
                 <input type="radio" checked={selectedEnv === 'server-railway'} onChange={() => setSelectedEnv('server-railway')} disabled={isBatchRunning || isRunning} style={{ display: 'none' }} />
-                <Server className="glow-server" size={16} />
-                <span style={{ fontSize: '0.85rem', fontWeight: 500, marginLeft: '10px' }}>Server: Container API (Node.js)</span>
+                <Server className="color-server" size={16} />
+                <span style={{ fontSize: '0.85rem', fontWeight: 500, marginLeft: '10px', color: 'var(--ink)' }}>Server: Container API (Node.js)</span>
               </label>
             </div>
 
             <button 
-              className="btn-primary" 
+              className="btn-secondary" 
               onClick={executeTargetedRun} 
               disabled={isRunning || isBatchRunning || (progressVal !== null && progressVal < 100)}
               style={{
-                background: 'transparent',
-                border: '1px solid hsl(217 32% 25%)',
-                boxShadow: 'none',
-                color: 'hsl(215 20% 80%)'
+                justifyContent: 'center',
+                padding: '10px',
+                fontSize: '0.85rem'
               }}
             >
               {isRunning ? (
@@ -723,17 +719,14 @@ export default function Dashboard() {
         {/* RIGHT COLUMN: Results & Console */}
         <div className="flex-column">
           
-          <div className="glass-panel flex-column" style={{ gap: '16px' }}>
+          <div className="card card-body flex-column" style={{ gap: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: '1.1rem', fontWeight: 600 }}>Targeted Run Diagnostics</h2>
+              <span className="eyebrow">Targeted Run Diagnostics</span>
               {currentRunMetrics.length > 0 && (
-                <span style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  borderRadius: '4px',
-                  padding: '3px 8px',
-                  fontSize: '0.75rem',
+                <span className="tag" style={{
                   fontWeight: 600,
-                  color: currentWarmRuns[0]?.sentiment.label === 'POSITIVE' ? 'hsl(150, 95%, 50%)' : 'hsl(350, 95%, 60%)'
+                  color: currentWarmRuns[0]?.sentiment.label === 'POSITIVE' ? 'var(--color-server)' : 'var(--color-error)',
+                  background: 'var(--inset)'
                 }}>
                   {currentWarmRuns[0]?.sentiment.label} ({(currentWarmRuns[0]?.sentiment.score * 100).toFixed(1)}%)
                 </span>
@@ -742,45 +735,44 @@ export default function Dashboard() {
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
               <div className="metric-card">
-                <span style={{ fontSize: '0.7rem', color: 'hsl(215 20% 50%)' }}>RTT Latency</span>
+                <span className="meta">RTT Latency</span>
                 <span className="metric-value" style={{ 
-                  fontSize: '1.4rem',
-                  color: selectedEnv === 'client-wasm' ? 'hsl(var(--accent-wasm))' : selectedEnv === 'client-webgpu' ? 'hsl(var(--accent-webgpu))' : 'hsl(var(--accent-server))' 
+                  color: selectedEnv === 'client-wasm' ? 'var(--color-wasm)' : selectedEnv === 'client-webgpu' ? 'var(--color-webgpu)' : 'var(--color-server)' 
                 }}>
                   {isRunning ? '...' : currentRunMetrics.length > 0 ? formatMs(currentMedianRtt) : '—'}
                 </span>
-                <span style={{ fontSize: '0.65rem', color: 'hsl(215 20% 40%)' }}>Warm Median</span>
+                <span className="meta" style={{ fontSize: '10px' }}>Warm Median</span>
               </div>
 
               <div className="metric-card">
-                <span style={{ fontSize: '0.7rem', color: 'hsl(215 20% 50%)' }}>Pure Inference</span>
-                <span className="metric-value" style={{ fontSize: '1.4rem' }}>
+                <span className="meta">Pure Inference</span>
+                <span className="metric-value">
                   {isRunning ? '...' : currentRunMetrics.length > 0 ? formatMs(currentAvgInfer) : '—'}
                 </span>
-                <span style={{ fontSize: '0.65rem', color: 'hsl(215 20% 40%)' }}>Warm Compute</span>
+                <span className="meta" style={{ fontSize: '10px' }}>Warm Compute</span>
               </div>
 
               <div className="metric-card">
-                <span style={{ fontSize: '0.7rem', color: 'hsl(215 20% 50%)' }}>Transit Overhead</span>
-                <span className="metric-value" style={{ fontSize: '1.4rem' }}>
+                <span className="meta">Transit Overhead</span>
+                <span className="metric-value">
                   {isRunning ? '...' : currentRunMetrics.length > 0 ? formatMs(currentAvgOverhead) : '—'}
                 </span>
-                <span style={{ fontSize: '0.65rem', color: 'hsl(215 20% 40%)' }}>Network/Worker Lag</span>
+                <span className="meta" style={{ fontSize: '10px' }}>Network/Worker Lag</span>
               </div>
 
               <div className="metric-card">
-                <span style={{ fontSize: '0.7rem', color: 'hsl(215 20% 50%)' }}>Cold Init</span>
-                <span className="metric-value" style={{ fontSize: '1.4rem' }}>
+                <span className="meta">Cold Init</span>
+                <span className="metric-value">
                   {isRunning ? '...' : currentColdRun ? formatMs(currentColdRun.initTimeMs) : '—'}
                 </span>
-                <span style={{ fontSize: '0.65rem', color: 'hsl(215 20% 40%)' }}>Graph Compilation</span>
+                <span className="meta" style={{ fontSize: '10px' }}>Graph Compiler</span>
               </div>
             </div>
 
             {progressVal !== null && (
               <div style={{ 
-                background: 'rgba(8,12,21,0.6)', 
-                border: '1px solid hsl(217 32% 15%)',
+                background: 'var(--inset)', 
+                border: '1px solid var(--line-soft)',
                 borderRadius: '8px',
                 padding: '10px',
                 display: 'flex',
@@ -788,23 +780,23 @@ export default function Dashboard() {
                 gap: '6px'
               }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem' }}>
-                  <span style={{ color: 'hsl(270 95% 65%)', fontWeight: 500 }}>{progressMessage}</span>
+                  <span style={{ color: 'var(--accent-ink)', fontWeight: 600 }}>{progressMessage}</span>
                   <span style={{ fontWeight: 600 }}>{progressVal.toFixed(0)}%</span>
                 </div>
-                <div style={{ width: '100%', height: '4px', background: 'rgba(255,255,255,0.05)', borderRadius: '2px', overflow: 'hidden' }}>
-                  <div style={{ width: `${progressVal}%`, height: '100%', background: 'linear-gradient(90deg, hsl(270 95% 65%) 0%, hsl(190 95% 50%) 100%)' }} />
+                <div style={{ width: '100%', height: '4px', background: 'var(--line-soft)', borderRadius: '2px', overflow: 'hidden' }}>
+                  <div style={{ width: `${progressVal}%`, height: '100%', background: 'var(--accent)' }} />
                 </div>
               </div>
             )}
           </div>
 
-          <div className="glass-panel flex-column" style={{ gap: '16px' }}>
+          <div className="card card-body flex-column" style={{ gap: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Terminal size={14} style={{ color: 'hsl(270 95% 65%)' }} />
-                <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>Execution Logs Console</span>
+                <Terminal size={14} style={{ color: 'var(--accent-ink)' }} />
+                <span className="eyebrow" style={{ color: 'var(--ink)' }}>Execution Logs Console</span>
               </div>
-              <button onClick={clearMetrics} style={{ background: 'transparent', border: 'none', color: 'hsl(215 20% 50%)', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <button onClick={clearMetrics} style={{ background: 'transparent', border: 'none', color: 'var(--ink-faint)', cursor: 'pointer', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <RotateCcw size={10} />
                 <span>Wipe Logs</span>
               </button>
@@ -812,21 +804,21 @@ export default function Dashboard() {
 
             <div className="console-panel" style={{ height: '180px' }}>
               {logs.length === 0 ? (
-                <div style={{ color: 'hsl(215 20% 35%)', fontStyle: 'italic' }}>
+                <div style={{ color: 'var(--ink-faint)', fontStyle: 'italic' }}>
                   Ready to test. Click "Run Automated Suite" above to benchmark everything.
                   <span className="console-cursor" />
                 </div>
               ) : (
                 logs.map((log) => {
-                  let tagColor = 'hsl(215 20% 60%)';
-                  if (log.tag === 'WASM') tagColor = 'hsl(var(--accent-wasm))';
-                  else if (log.tag === 'WebGPU') tagColor = 'hsl(var(--accent-webgpu))';
-                  else if (log.tag === 'Server') tagColor = 'hsl(var(--accent-server))';
+                  let tagColor = 'var(--ink-muted)';
+                  if (log.tag === 'WASM') tagColor = 'var(--color-wasm)';
+                  else if (log.tag === 'WebGPU') tagColor = 'var(--color-webgpu)';
+                  else if (log.tag === 'Server') tagColor = 'var(--color-server)';
 
                   let msgColor = 'inherit';
-                  if (log.type === 'error') msgColor = 'hsl(var(--accent-error))';
-                  else if (log.type === 'success') msgColor = '#ffffff';
-                  else if (log.type === 'warn') msgColor = 'hsl(var(--accent-warning))';
+                  if (log.type === 'error') msgColor = 'var(--color-error)';
+                  else if (log.type === 'success') msgColor = 'var(--ink)';
+                  else if (log.type === 'warn') msgColor = 'var(--color-warning)';
 
                   return (
                     <div key={log.id} className="console-line" style={{ color: msgColor }}>
@@ -838,9 +830,9 @@ export default function Dashboard() {
                 })
               )}
               {(isBatchRunning || isRunning) && (
-                <div className="console-line" style={{ color: 'hsl(var(--accent-webgpu))' }}>
+                <div className="console-line" style={{ color: 'var(--accent-ink)' }}>
                   <span className="console-timestamp">[{new Date().toTimeString().split(' ')[0]}]</span>
-                  <span className="console-tag" style={{ color: 'hsl(var(--accent-webgpu))' }}>[System]</span>
+                  <span className="console-tag" style={{ color: 'var(--accent-ink)' }}>[System]</span>
                   <span>Executing active task: {currentProgressText}...</span>
                   <span className="console-cursor" />
                 </div>
@@ -853,11 +845,11 @@ export default function Dashboard() {
 
       </div>
 
-      {/* COMPARATIVE VISUALIZATIONS (GROUPED CROSSOVER BAR CHART) */}
-      <div className="glass-panel flex-column" style={{ gap: '20px', marginTop: '10px' }}>
+      {/* COMPARATIVE VISUALIZATIONS (GROUPED CROSSOVER LINE CHART) */}
+      <div className="card card-body flex-column" style={{ gap: '20px', marginTop: '10px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 700 }}>Grouped Payload Crossover Analysis (Warm RTT)</h2>
-          <span style={{ fontSize: '0.8rem', color: 'hsl(215 20% 50%)' }}>
+          <h2 className="eyebrow" style={{ color: 'var(--ink)', fontSize: '0.9rem', margin: 0 }}>Grouped Payload Crossover Analysis (Warm RTT)</h2>
+          <span className="meta">
             {simulateNetwork ? 'Simulated Network Active (+80ms Server Offset)' : 'Local Host Latency (Zero Server Network Offset)'}
           </span>
         </div>
@@ -869,34 +861,26 @@ export default function Dashboard() {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(8,12,21,0.3)',
-            border: '1px dashed hsl(217 32% 15%)',
-            borderRadius: '12px',
-            color: 'hsl(215 20% 40%)',
+            background: 'var(--inset)',
+            border: '1px dashed var(--line)',
+            borderRadius: '10px',
+            color: 'var(--ink-faint)',
             fontSize: '0.9rem',
             gap: '12px'
           }}>
-            <Layers size={24} style={{ color: 'hsl(215 20% 25%)' }} />
-            <span>No batch measurements recorded. Run the Automated Suite or Targeted Slots to compile crossover metrics.</span>
+            <Layers size={24} style={{ color: 'var(--line)' }} />
+            <span>No batch measurements recorded. Run the Automated Suite above to compile crossover metrics.</span>
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '3fr 1.2fr', gap: '30px', alignItems: 'center' }}>
             
-            {/* Custom SVG Grouped Bar Chart */}
+            {/* Custom SVG Grouped Line Chart */}
             <div style={{ width: '100%', overflow: 'visible' }}>
               <svg viewBox="0 0 540 260" style={{ width: '100%', height: 'auto', overflow: 'visible' }}>
                 <defs>
-                  <filter id="glow-wasm" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                  </filter>
-                  <filter id="glow-webgpu" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                  </filter>
-                  <filter id="glow-server" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="3" result="blur" />
-                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  {/* Subtle soft shadow filter for light theme */}
+                  <filter id="soft-shadow" x="-10%" y="-10%" width="120%" height="120%">
+                    <feDropShadow dx="0" dy="1.5" stdDeviation="2" floodOpacity="0.08" />
                   </filter>
                 </defs>
 
@@ -906,16 +890,16 @@ export default function Dashboard() {
                   const label = (maxChartVal * ratio).toFixed(0) + 'ms';
                   return (
                     <g key={i}>
-                      <line x1="50" y1={y} x2="480" y2={y} stroke="hsl(217 32% 12%)" strokeWidth="1" strokeDasharray="3 3" />
-                      <text x="40" y={y + 4} fill="hsl(215 20% 40%)" fontSize="9" textAnchor="end">{label}</text>
+                      <line x1="50" y1={y} x2="480" y2={y} stroke="var(--line-soft)" strokeWidth="1" strokeDasharray="3 3" />
+                      <text x="40" y={y + 4} fill="var(--ink-faint)" fontSize="9" textAnchor="end">{label}</text>
                     </g>
                   );
                 })}
 
                 {/* Y-Axis line */}
-                <line x1="50" y1="40" x2="50" y2="200" stroke="hsl(217 32% 20%)" strokeWidth="1" />
+                <line x1="50" y1="40" x2="50" y2="200" stroke="var(--line)" strokeWidth="1" />
                 {/* X-Axis line */}
-                <line x1="50" y1="200" x2="480" y2="200" stroke="hsl(217 32% 20%)" strokeWidth="1" />
+                <line x1="50" y1="200" x2="480" y2="200" stroke="var(--line)" strokeWidth="1" />
 
                 {/* X-Axis Tick Labels */}
                 {[
@@ -924,8 +908,8 @@ export default function Dashboard() {
                   { label: 'Long (~600 words)', x: 420 }
                 ].map((tick, i) => (
                   <g key={i}>
-                    <line x1={tick.x} y1="200" x2={tick.x} y2="205" stroke="hsl(217 32% 20%)" strokeWidth="1" />
-                    <text x={tick.x} y="220" fill="hsl(215 20% 80%)" fontSize="10" fontWeight="600" textAnchor="middle">
+                    <line x1={tick.x} y1="200" x2={tick.x} y2="205" stroke="var(--line)" strokeWidth="1" />
+                    <text x={tick.x} y="220" fill="var(--ink)" fontSize="10" fontWeight="600" textAnchor="middle">
                       {tick.label}
                     </text>
                   </g>
@@ -944,12 +928,11 @@ export default function Dashboard() {
                         <path 
                           d={wasmPath} 
                           fill="none" 
-                          stroke="hsl(var(--accent-wasm))" 
-                          strokeWidth="3.5" 
+                          stroke="var(--color-wasm)" 
+                          strokeWidth="3" 
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          filter="url(#glow-wasm)"
-                          style={{ opacity: 0.9 }}
+                          filter="url(#soft-shadow)"
                         />
                       )}
                       {/* WebGPU Line */}
@@ -957,12 +940,11 @@ export default function Dashboard() {
                         <path 
                           d={webgpuPath} 
                           fill="none" 
-                          stroke="hsl(var(--accent-webgpu))" 
-                          strokeWidth="3.5" 
+                          stroke="var(--color-webgpu)" 
+                          strokeWidth="3" 
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          filter="url(#glow-webgpu)"
-                          style={{ opacity: 0.9 }}
+                          filter="url(#soft-shadow)"
                         />
                       )}
                       {/* Server Line */}
@@ -970,19 +952,18 @@ export default function Dashboard() {
                         <path 
                           d={serverPath} 
                           fill="none" 
-                          stroke="hsl(var(--accent-server))" 
-                          strokeWidth="3.5" 
+                          stroke="var(--color-server)" 
+                          strokeWidth="3" 
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          filter="url(#glow-server)"
-                          style={{ opacity: 0.9 }}
+                          filter="url(#soft-shadow)"
                         />
                       )}
 
                       {/* Render Circle Nodes & Values */}
-                      {renderNodes('client-wasm', 'hsl(var(--accent-wasm))')}
-                      {renderNodes('client-webgpu', 'hsl(var(--accent-webgpu))')}
-                      {renderNodes('server-railway', 'hsl(var(--accent-server))')}
+                      {renderNodes('client-wasm', 'var(--color-wasm)')}
+                      {renderNodes('client-webgpu', 'var(--color-webgpu)')}
+                      {renderNodes('server-railway', 'var(--color-server)')}
                     </g>
                   );
                 })()}
@@ -990,29 +971,25 @@ export default function Dashboard() {
             </div>
 
             {/* Legend & Breakdown explanations */}
-            <div className="flex-column" style={{ gap: '14px', background: 'rgba(8,12,21,0.4)', padding: '16px', borderRadius: '10px', border: '1px solid hsl(217 32% 15%)' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#ffffff' }}>Legend & Analysis</span>
+            <div className="flex-column" style={{ gap: '14px', background: 'var(--inset)', padding: '16px', borderRadius: '10px', border: '1px solid var(--line-soft)' }}>
+              <span className="eyebrow" style={{ color: 'var(--ink)' }}>Legend & Analysis</span>
               
               <div className="flex-column" style={{ gap: '8px', fontSize: '0.8rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'hsl(var(--accent-wasm))' }} />
-                  <span>Client WASM CPU</span>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--color-wasm)' }} />
+                  <span style={{ color: 'var(--ink-muted)', fontWeight: 500 }}>Client WASM CPU</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'hsl(var(--accent-webgpu))' }} />
-                  <span>Client WebGPU GPU</span>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--color-webgpu)' }} />
+                  <span style={{ color: 'var(--ink-muted)', fontWeight: 500 }}>Client WebGPU GPU</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'hsl(var(--accent-server))' }} />
-                  <span>Server API</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'hsl(350 95% 60%)' }} />
-                  <span>Transit Overhead (Net/Worker)</span>
+                  <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--color-server)' }} />
+                  <span style={{ color: 'var(--ink-muted)', fontWeight: 500 }}>Server API</span>
                 </div>
               </div>
 
-              <div style={{ fontSize: '0.75rem', color: 'hsl(215 20% 50%)', borderTop: '1px solid hsl(217 32% 15%)', paddingTop: '10px', lineHeight: 1.5 }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--ink-muted)', borderTop: '1px solid var(--line)', paddingTop: '10px', lineHeight: 1.5 }}>
                 <strong>How to read:</strong> Notice how WASM starts as the fastest target on <em>Short text</em> but grows significantly on <em>Long text</em>.
                 <br /><br />
                 Conversely, Server starts slowest on <em>Short text</em> due to network overhead, but becomes the fastest warm compute option on <em>Long text</em> once network transit is eclipsed by CPU execution gains.
